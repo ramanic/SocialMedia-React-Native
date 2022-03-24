@@ -3,26 +3,33 @@ import {
   StyleSheet,
   Text,
   View,
-  Button,
   TouchableOpacity,
-  TextInput,
   Pressable,
-  Alert,
 } from 'react-native';
+import {
+  Button,
+  Input,
+  VStack,
+  HStack,
+  IconButton,
+  CloseIcon,
+  Alert,
+} from 'native-base';
 import {Formik} from 'formik';
 import React, {useState} from 'react';
 import * as Yup from 'yup';
 import Validator from 'email-validator';
 import {db, firebase} from './../../config/firebase';
 import {get} from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+
 const SignupForm = ({navigation}) => {
+  const [alert, setAlert] = useState({show: false, type: 'success', text: ''});
+
   const onSignUp = async (email, username, password) => {
     await firebase
       .auth()
       .createUserWithEmailAndPassword(email, password)
       .then(async userCredential => {
-        Alert.alert('Sign up Successful');
-        navigation.push('LoginScreen');
         const user = userCredential.user;
         db.collection('users')
           .doc(user.email)
@@ -30,11 +37,17 @@ const SignupForm = ({navigation}) => {
             owner_uid: user.uid,
             username: username,
             profile_picture: await getRandomProfilePic(),
-          });
+          })
+          .then(() => {});
       })
       .catch(e => {
         console.log(e.message);
-        Alert.alert('Sign up failed');
+        setAlert({
+          ...alert,
+          show: true,
+          type: 'danger',
+          text: 'Singup Failed',
+        });
       });
   };
   const getRandomProfilePic = async () => {
@@ -79,7 +92,7 @@ const SignupForm = ({navigation}) => {
                       : 'red',
                 },
               ]}>
-              <TextInput
+              <Input
                 placeholder="Email"
                 autoCapitalize="none"
                 autofocus={true}
@@ -102,7 +115,7 @@ const SignupForm = ({navigation}) => {
                       : 'red',
                 },
               ]}>
-              <TextInput
+              <Input
                 placeholder="Username"
                 autoCapitalize="none"
                 autofocus={true}
@@ -123,7 +136,7 @@ const SignupForm = ({navigation}) => {
                       : 'red',
                 },
               ]}>
-              <TextInput
+              <Input
                 placeholder="Password"
                 autoCapitalize="none"
                 autofocus={true}
@@ -159,6 +172,27 @@ const SignupForm = ({navigation}) => {
           </>
         )}
       </Formik>
+      {alert.show ? (
+        <Alert w="100%" status={alert.type} style={{marginTop: 30}}>
+          <VStack space={2} flexShrink={1} w="100%" mt={2}>
+            <HStack flexShrink={1} space={2} justifyContent="space-between">
+              <HStack space={2} flexShrink={1}>
+                <Alert.Icon mt="0" />
+                <Text fontSize="md" color="coolGray.800">
+                  {alert.text}
+                </Text>
+              </HStack>
+              <IconButton
+                onPress={() =>
+                  setAlert({show: false, type: 'success', text: ''})
+                }
+                variant="unstyled"
+                icon={<CloseIcon size="3" color="coolGray.600" />}
+              />
+            </HStack>
+          </VStack>
+        </Alert>
+      ) : null}
     </View>
   );
 };
@@ -172,10 +206,10 @@ const styles = StyleSheet.create({
   },
   inputFields: {
     borderRadius: 4,
-    padding: 12,
+
     backgroundColor: '#fafafa',
     marginBottom: 10,
-    borderWidth: 1,
+    borderWidth: 2,
   },
   button: isValid => ({
     backgroundColor: isValid ? '#0096f6' : '#9acaf7',

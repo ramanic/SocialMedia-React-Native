@@ -3,19 +3,25 @@ import {
   StyleSheet,
   Text,
   View,
-  Button,
   TouchableOpacity,
-  TextInput,
   Pressable,
-  Alert,
 } from 'react-native';
+import {Alert} from 'native-base';
 import {Formik} from 'formik';
-import React from 'react';
+import React, {useState} from 'react';
 import * as Yup from 'yup';
 import Validator from 'email-validator';
 import {firebase} from './../../config/firebase';
-
+import {
+  Button,
+  Input,
+  VStack,
+  HStack,
+  IconButton,
+  CloseIcon,
+} from 'native-base';
 const LoginForm = ({navigation}) => {
+  const [alert, setAlert] = useState({show: false, type: 'success', text: ''});
   const onLogin = async (email, password) => {
     try {
       firebase
@@ -25,7 +31,12 @@ const LoginForm = ({navigation}) => {
           console.log('Firebase Login Success');
         })
         .catch(e => {
-          Alert.alert('Inavlid username or password');
+          setAlert({
+            ...alert,
+            show: true,
+            type: 'danger',
+            text: 'Invalid Username or Passsord',
+          });
         });
     } catch (e) {}
   };
@@ -53,17 +64,8 @@ const LoginForm = ({navigation}) => {
           isValid,
         }) => (
           <>
-            <View
-              style={[
-                styles.inputFields,
-                {
-                  borderColor:
-                    values.email.length < 1 || Validator.validate(values.email)
-                      ? '#ccc'
-                      : 'red',
-                },
-              ]}>
-              <TextInput
+            <View style={[styles.inputFields]}>
+              <Input
                 placeholder="Email"
                 autoCapitalize="none"
                 autofocus={true}
@@ -75,17 +77,8 @@ const LoginForm = ({navigation}) => {
                 value={values.email}
               />
             </View>
-            <View
-              style={[
-                styles.inputFields,
-                {
-                  borderColor:
-                    values.password.length < 1 || values.password.length >= 6
-                      ? '#ccc'
-                      : 'red',
-                },
-              ]}>
-              <TextInput
+            <View style={[styles.inputFields]}>
+              <Input
                 placeholder="Password"
                 autoCapitalize="none"
                 autofocus={true}
@@ -121,6 +114,27 @@ const LoginForm = ({navigation}) => {
           </>
         )}
       </Formik>
+      {alert.show ? (
+        <Alert w="100%" status={alert.type} style={{marginTop: 30}}>
+          <VStack space={2} flexShrink={1} w="100%" mt={2}>
+            <HStack flexShrink={1} space={2} justifyContent="space-between">
+              <HStack space={2} flexShrink={1}>
+                <Alert.Icon mt="0" />
+                <Text fontSize="md" color="coolGray.800">
+                  {alert.text}
+                </Text>
+              </HStack>
+              <IconButton
+                onPress={() =>
+                  setAlert({show: false, type: 'success', text: ''})
+                }
+                variant="unstyled"
+                icon={<CloseIcon size="3" color="coolGray.600" />}
+              />
+            </HStack>
+          </VStack>
+        </Alert>
+      ) : null}
     </View>
   );
 };
@@ -133,8 +147,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   inputFields: {
-    borderRadius: 4,
-    padding: 12,
     backgroundColor: '#fafafa',
     marginBottom: 10,
     borderWidth: 1,

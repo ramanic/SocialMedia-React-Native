@@ -12,9 +12,14 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 import AuthNavigation from './config/AuthNavigation';
+import {NativeBaseProvider} from 'native-base';
 
 const App: () => Node = () => {
-  return <AuthNavigation />;
+  return (
+    <NativeBaseProvider>
+      <AuthNavigation />
+    </NativeBaseProvider>
+  );
 };
 
 export default App;
